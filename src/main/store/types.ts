@@ -1,5 +1,7 @@
 import { BetaMessageParam } from '@anthropic-ai/sdk/resources/beta/messages/messages';
 
+export type BrowserOption = "chrome" | "safari" | "firefox"
+
 export type NextAction =
   | { type: 'key'; text: string }
   | { type: 'type'; text: string }
@@ -16,6 +18,7 @@ export type NextAction =
 
 export type AppState = {
   instructions: string | null;
+  browserPreference: BrowserOption
   fullyAuto: boolean;
   running: boolean;
   error: string | null;
@@ -24,6 +27,7 @@ export type AppState = {
 
   RUN_AGENT: () => void;
   STOP_RUN: () => void;
+  SET_BROWSER_PREFERENCE: (browserPreference: BrowserOption) => void
   SET_INSTRUCTIONS: (instructions: string) => void;
   SET_FULLY_AUTO: (fullyAuto: boolean) => void;
   CLEAR_HISTORY: () => void;

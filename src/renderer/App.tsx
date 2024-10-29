@@ -11,6 +11,7 @@ import {
   extendTheme,
   Spinner,
   useToast,
+  Stack,
 } from '@chakra-ui/react';
 import { FaGithub, FaStop, FaTrash } from 'react-icons/fa';
 import { HiMinus, HiX } from 'react-icons/hi';
@@ -18,6 +19,8 @@ import { Route, MemoryRouter as Router, Routes } from 'react-router-dom';
 import { useDispatch } from 'zutron';
 import { useStore } from './hooks/useStore';
 import { RunHistory } from './RunHistory';
+import { BrowserSelect } from './BrowserSelect';
+import { BrowserOption } from '../main/store/types';
 
 function Main() {
   const dispatch = useDispatch(window.zutron);
@@ -32,10 +35,12 @@ function Main() {
   const [localInstructions, setLocalInstructions] = React.useState(
     savedInstructions ?? '',
   );
+  const [localBrowserPreference, setLocalBrowserPreference] = React.useState<BrowserOption>("firefox")
   const toast = useToast(); // Add toast hook
 
   const startRun = () => {
     // Update Zustand state before starting the run
+    dispatch({ type: 'SET_BROWSER_PREFERENCE', payload: localBrowserPreference })
     dispatch({ type: 'SET_INSTRUCTIONS', payload: localInstructions });
     dispatch({ type: 'RUN_AGENT', payload: null });
   };
@@ -147,6 +152,8 @@ function Main() {
           }}
           onKeyDown={handleKeyDown}
         />
+        <Stack direction="column" w="100%">
+          <BrowserSelect setBrowser={setLocalBrowserPreference} disabled={running}/> 
         <HStack justify="space-between" align="center" w="100%">
           <HStack spacing={2}>
             <Switch
@@ -209,6 +216,7 @@ function Main() {
             </Button>
           </HStack>
         </HStack>
+        </Stack>
 
         {/* Add error display */}
         {error && (

@@ -6,7 +6,7 @@ import { Button, Key, keyboard, mouse, Point } from '@nut-tree-fork/nut-js';
 // import { createCanvas, loadImage } from 'canvas';
 import { desktopCapturer, screen } from 'electron';
 import { anthropic } from './anthropic';
-import { AppState, NextAction } from './types';
+import { AppState, BrowserOption, NextAction } from './types';
 import { extractAction } from './extractAction';
 import { hideWindowBlock, showWindow } from '../window';
 
@@ -81,6 +81,7 @@ const mapFromAiSpace = (x: number, y: number) => {
 
 const promptForAction = async (
   runHistory: BetaMessageParam[],
+  browserPreference: BrowserOption
 ): Promise<BetaMessageParam> => {
   // Strip images from all but the last message
   const historyWithoutImages = runHistory.map((msg, index) => {
@@ -118,7 +119,7 @@ const promptForAction = async (
         description:
           'Call this function when you have achieved the goal of the task.',
         input_schema: {
-          type: 'object',
+          type: 'object', 
           properties: {
             success: {
               type: 'boolean',
@@ -133,7 +134,7 @@ const promptForAction = async (
         },
       },
     ],
-    system: `The user will ask you to perform a task and you should use their computer to do so. After each step, take a screenshot and carefully evaluate if you have achieved the right outcome. Explicitly show your thinking: "I have evaluated step X..." If not correct, try again. Only when you confirm a step was executed correctly should you move on to the next one. Note that you have to click into the browser address bar before typing a URL. You should always call a tool! Always return a tool call. Remember call the finish_run tool when you have achieved the goal of the task. Do not explain you have finished the task, just call the tool. Use keyboard shortcuts to navigate whenever possible.`,
+    system: `The user will ask you to perform a task and you should use their computer to do so.`,
     // tool_choice: { type: 'any' },
     messages: historyWithoutImages,
     betas: ['computer-use-2024-10-22'],
@@ -204,6 +205,7 @@ export const runAgent = async (
 ) => {
   setState({
     ...getState(),
+    browserPreference: getState().browserPreference ?? "firefox",
     running: true,
     runHistory: [{ role: 'user', content: getState().instructions ?? '' }],
     error: null,
@@ -221,7 +223,8 @@ export const runAgent = async (
     }
 
     try {
-      const message = await promptForAction(getState().runHistory);
+      const {runHistory, browserPreference} = getState()
+      const message = await promptForAction(runHistory, browserPreference);
       setState({
         ...getState(),
         runHistory: [...getState().runHistory, message],
